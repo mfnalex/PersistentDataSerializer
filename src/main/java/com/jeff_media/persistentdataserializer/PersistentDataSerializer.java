@@ -1,7 +1,6 @@
 package com.jeff_media.persistentdataserializer;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -79,12 +78,11 @@ public final class PersistentDataSerializer {
                 " in PersistentDataContainer " + pdc.toString());
     }
 
-    private static YamlConfiguration createYaml() {
-        YamlConfiguration yaml = new YamlConfiguration();
-        yaml.options().pathSeparator(PSEP);
-        return yaml;
-    }
-
+    /**
+     * Serializes a {@link PersistentDataContainer}
+     * @param pdc PersistentDataContainer
+     * @return serialized PersistentDataContainer
+     */
     @NotNull
     public static List<Map<String, Object>> serialize(
             @NotNull
@@ -113,6 +111,12 @@ public final class PersistentDataSerializer {
         return list;
     }
 
+    /**
+     * Deserializes a {@link PersistentDataContainer}
+     * @param context PersistentDataAdapterContext
+     * @param serializedPdc serialized PersistentDataContainer
+     * @return deserialized PersistentDataContainer
+     */
     @NotNull
     public static PersistentDataContainer deserialize(PersistentDataAdapterContext context,
                                                       List<Map<String, Object>> serializedPdc) {
@@ -124,7 +128,7 @@ public final class PersistentDataSerializer {
             PersistentDataType<Object, Object> type =
                     (PersistentDataType<Object, Object>) getNativePersistentDataTypeByFieldName((String) map.get("type"));
             
-            
+
             Object value = map.get("value");
             if(type.equals(PersistentDataType.TAG_CONTAINER)) {
                 value = deserialize(context, (List<Map<String, Object>>) value);
