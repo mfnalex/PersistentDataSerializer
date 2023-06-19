@@ -4,6 +4,7 @@ import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
 import com.jeff_media.persistentdataserializer.PersistentDataSerializer;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -35,6 +36,7 @@ public class PersistentDataSerializerTest {
         pdc.set(NamespacedKey.fromString("test:name"), PersistentDataType.STRING, "mfnalex");
         pdc1.set(NamespacedKey.fromString("test:age"), PersistentDataType.INTEGER, 28);
         pdc2.set(NamespacedKey.fromString("test:height"), PersistentDataType.DOUBLE, 1.85);
+        pdc2.set(NamespacedKey.fromString("test:heightx2"), PersistentDataType.DOUBLE, 1.85*2);
         pdc3.set(NamespacedKey.fromString("test:weight"), PersistentDataType.FLOAT, 60.5f);
         pdc.set(NamespacedKey.fromString("test:pdc1"), PersistentDataType.TAG_CONTAINER, pdc1);
         pdc.set(NamespacedKey.fromString("test:pdc23"), PersistentDataType.TAG_CONTAINER_ARRAY,
@@ -59,5 +61,9 @@ public class PersistentDataSerializerTest {
         
         Assertions.assertEquals( new Float(60.5f), d_pdc3.get(NamespacedKey.fromString("test:weight"),
             PersistentDataType.FLOAT));
+
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("pdc", PersistentDataSerializer.serialize(pdc));
+        System.out.println(yaml.saveToString());
     }
 }
