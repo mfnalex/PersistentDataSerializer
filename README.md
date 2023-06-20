@@ -38,13 +38,13 @@ You must also shade the dependency into your plugin's .jar. [Click here if you d
 ## Usage
 ```java
 // Serialize to Map
-List<Map<?,?>> map = PersistentDataSerializer.toMap(persistentDataContainer);
+List<Map<?,?>> map = PersistentDataSerializer.toMapList(persistentDataContainer);
 
 // Serialize to Json
 String json = PersistentDataSerializer.toJson(persistentDataContainer);
 
 // Deserialize from Map
-PersistentDataContainer pdc = PersistentDataSerializer.fromMap(pdcContext, map);
+PersistentDataContainer pdc = PersistentDataSerializer.fromMapList(pdcContext, map);
 
 // Deserialize from Json
 PersistentDataContainer pdc = PersistentDataSerializer.fromJson(pdcContext, json);
