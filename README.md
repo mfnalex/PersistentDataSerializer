@@ -1,3 +1,18 @@
+# PersistentDataSerializer
+<!--- Buttons start -->
+<p align="center">
+  <a href="https://repo.jeff-media.com/javadoc/public/com/jeff_media/PersistentDataSerializer/1.0-SNAPSHOT">
+    <img src="https://static.jeff-media.com/img/button_javadocs.png?3" alt="Javadocs">
+  </a>
+  <a href="https://discord.jeff-media.com/">
+    <img src="https://static.jeff-media.com/img/button_discord.png?3" alt="Discord">
+  </a>
+  <a href="https://paypal.me/mfnalex">
+    <img src="https://static.jeff-media.com/img/button_donate.png?3" alt="Donate">
+  </a>
+</p>
+<!--- Buttons end -->
+
 Allows to serialize and deserialize Bukkit's PersistentDataContainers.
 
 ## Maven

@@ -48,6 +48,30 @@
                     <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <!--                    <additionalOptions>-->
+                    <!--                        <additionalOption>-Xdoclint:none</additionalOption>-->
+                    <!--                    </additionalOptions>-->
+                    <links>
+                        <link>https://hub.spigotmc.org/javadocs/bukkit/</link>
+                        <link>https://guava.dev/releases/31.0.1-jre/api/docs/</link>
+                        <link>https://javadoc.io/doc/org.yaml/snakeyaml/1.30/</link>
+                        <!--<link>https://javadoc.io/doc/org.jetbrains/annotations-java5/23.0.0/</link>-->
+                    </links>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <resources>
             <resource>
