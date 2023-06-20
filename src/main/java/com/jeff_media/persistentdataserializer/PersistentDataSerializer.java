@@ -85,7 +85,7 @@ public final class PersistentDataSerializer {
     }
 
     /**
-     * Serializes a {@link PersistentDataContainer} to a {@link Map}
+     * Serializes a {@link PersistentDataContainer} to a list of maps
      * @param pdc PersistentDataContainer
      * @return serialized PersistentDataContainer
      */
@@ -118,7 +118,7 @@ public final class PersistentDataSerializer {
     }
 
     /**
-     * Deserializes a {@link PersistentDataContainer} from a {@link Map}
+     * Deserializes a {@link PersistentDataContainer} from a list of maps
      * @param context PersistentDataAdapterContext
      * @param serializedPdc serialized PersistentDataContainer
      * @return deserialized PersistentDataContainer
