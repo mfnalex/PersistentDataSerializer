@@ -1,5 +1,9 @@
 package com.jeff_media.persistentdataserializer;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Array;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -27,6 +31,8 @@ public final class PersistentDataSerializer {
     private static final Map<String, PersistentDataType<?, ?>> NATIVE_PERSISTENT_DATA_TYPES_BY_NAME = new HashMap<>();
     private static final Map<PersistentDataType<?, ?>, String> NATIVE_PERSISTENT_DATA_TYPE_NAMES_BY_CLASS =
             new HashMap<>();
+    private static final TypeToken<List<Map<String,Object>>> MAP_TYPE_TOKEN = new TypeToken<List<Map<String,Object>>>() {};
+    private static final Gson gson = new GsonBuilder().create();
 
     static {
         for (Field field : PersistentDataType.class.getFields()) {
@@ -35,6 +41,9 @@ public final class PersistentDataSerializer {
             }
             try {
                 PersistentDataType<?, ?> type = Objects.requireNonNull((PersistentDataType<?, ?>) field.get(null));
+                if(!(type instanceof PersistentDataType.PrimitivePersistentDataType)) {
+                    continue;
+                }
                 String name = field.getName();
 
                 NATIVE_PERSISTENT_DATA_TYPES.add(type);
@@ -75,31 +84,31 @@ public final class PersistentDataSerializer {
             }
         }
         throw new IllegalArgumentException("Could not find a native PersistentDataType for key " + key.toString() +
-                " in PersistentDataContainer " + pdc.toString());
+                " in PersistentDataContainer " + pdc.toString() + ". Available native datatypes are " + String.join(", ", NATIVE_PERSISTENT_DATA_TYPES_BY_NAME.keySet()));
     }
 
     /**
-     * Serializes a {@link PersistentDataContainer}
+     * Serializes a {@link PersistentDataContainer} to a {@link Map}
      * @param pdc PersistentDataContainer
      * @return serialized PersistentDataContainer
      */
     @NotNull
-    public static List<Map<String, Object>> serialize(
+    public static List<Map<?, ?>> toMap(
             @NotNull
             PersistentDataContainer pdc) {
-        List<Map<String, Object>> list = new ArrayList<>();
+        List<Map<?, ?>> list = new ArrayList<>();
         for (NamespacedKey key : pdc.getKeys()) {
             Map<String, Object> map = new LinkedHashMap<>();
             PersistentDataType<?, ?> type = getPersistentDataType(pdc, key);
             Object value = pdc.get(key, type);
             if (type.equals(PersistentDataType.TAG_CONTAINER)) {
-                value = serialize((PersistentDataContainer) value);
+                value = toMap((PersistentDataContainer) value);
             }
             else if (type.equals(PersistentDataType.TAG_CONTAINER_ARRAY)) {
                 PersistentDataContainer[] containers = (PersistentDataContainer[]) value;
-                List<List<Map<String, Object>>> serializedContainers = new ArrayList<>();
+                List<List<Map<?, ?>>> serializedContainers = new ArrayList<>();
                 for (PersistentDataContainer container : containers) {
-                    serializedContainers.add(serialize(container));
+                    serializedContainers.add(toMap(container));
                 }
                 value = serializedContainers;
             }
@@ -112,40 +121,101 @@ public final class PersistentDataSerializer {
     }
 
     /**
-     * Deserializes a {@link PersistentDataContainer}
+     * Deserializes a {@link PersistentDataContainer} from a {@link Map}
      * @param context PersistentDataAdapterContext
      * @param serializedPdc serialized PersistentDataContainer
      * @return deserialized PersistentDataContainer
      */
     @NotNull
-    public static PersistentDataContainer deserialize(PersistentDataAdapterContext context,
-                                                      List<Map<String, Object>> serializedPdc) {
+    public static PersistentDataContainer fromMap(PersistentDataAdapterContext context,
+                                                  List<Map<?, ?>> serializedPdc) {
         PersistentDataContainer pdc = context.newPersistentDataContainer();
-        for (Map<String, Object> map : serializedPdc) {
+        for (Map<?, ?> map : serializedPdc) {
             NamespacedKey key = NamespacedKey.fromString((String) map.get("key"));
-            
+
             Objects.requireNonNull(key, "Key cannot be null");
+            Object value = map.get("value");
+
             PersistentDataType<Object, Object> type =
                     (PersistentDataType<Object, Object>) getNativePersistentDataTypeByFieldName((String) map.get("type"));
-            
 
-            Object value = map.get("value");
             if(type.equals(PersistentDataType.TAG_CONTAINER)) {
-                value = deserialize(context, (List<Map<String, Object>>) value);
+                value = fromMap(context, (List<Map<?, ?>>) value);
             }
             else if(type.equals(PersistentDataType.TAG_CONTAINER_ARRAY)) {
-                List<List<Map<String, Object>>> serializedContainers = (List<List<Map<String, Object>>>) value;
+                List<List<Map<?, ?>>> serializedContainers = (List<List<Map<?, ?>>>) value;
                 PersistentDataContainer[] containers = new PersistentDataContainer[serializedContainers.size()];
                 for(int i=0; i<serializedContainers.size(); i++) {
-                    containers[i] = deserialize(context, serializedContainers.get(i));
+                    containers[i] = fromMap(context, serializedContainers.get(i));
                 }
                 value = containers;
             }
-            
+            else {
+                value = cast(value, type);
+            }
+
             pdc.set(key, type, value);
-            
+
         }
         return pdc;
+    }
+
+    private static Object cast(Object value, PersistentDataType<?,?> type) {
+        Class<?> primitiveType = type.getPrimitiveType();
+        if(primitiveType == Float.class) {
+            return ((Number) value).floatValue();
+        } else if(primitiveType == Integer.class) {
+            return ((Number) value).intValue();
+        } else if(primitiveType == Double.class) {
+            return ((Number) value).doubleValue();
+        } else if(primitiveType == Short.class) {
+            return ((Number) value).shortValue();
+        } else if(primitiveType == Byte.class) {
+            if(type.getComplexType() == Boolean.class) {
+                if(value instanceof Byte) {
+                    return ((Byte) value) == 1;
+                } else if(value instanceof Boolean) {
+                    return (Boolean) value;
+                }
+            } else if(value instanceof Boolean) {
+                return (byte) (((Boolean) value) ? 1 : 0);
+            } else if(value instanceof Number) {
+                return ((Number) value).byteValue();
+            }
+        } else if(value instanceof List) {
+            List<?> list = (List<?>) value;
+            int length = list.size();
+            if(type == PersistentDataType.BYTE_ARRAY) {
+                byte[] arr = new byte[length];
+                for(int i=0; i<length; i++) {
+                    arr[i] = ((Number) list.get(i)).byteValue();
+                }
+                return arr;
+            } else if(type == PersistentDataType.INTEGER_ARRAY) {
+                int[] arr = new int[length];
+                for(int i=0; i<length; i++) {
+                    arr[i] = ((Number) list.get(i)).intValue();
+                }
+                return arr;
+            } else if(type == PersistentDataType.LONG_ARRAY) {
+                long[] arr = new long[length];
+                for(int i=0; i<length; i++) {
+                    arr[i] = ((Number) list.get(i)).longValue();
+                }
+                return arr;
+            } else {
+                throw new IllegalArgumentException("Unknown array type " + type.getPrimitiveType().getComponentType().getName());
+            }
+        }
+        return value;
+    }
+
+    public static String toJson(PersistentDataContainer pdc) {
+        return gson.toJson(toMap(pdc), MAP_TYPE_TOKEN.getType());
+    }
+
+    public static PersistentDataContainer fromJson(PersistentDataAdapterContext context, String json) {
+        return fromMap(context, gson.fromJson(json, MAP_TYPE_TOKEN.getType()));
     }
 
     /**
