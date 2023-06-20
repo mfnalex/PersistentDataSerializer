@@ -33,7 +33,7 @@ Allows to serialize and deserialize Bukkit's PersistentDataContainers to and fro
 </dependency>
 ```
 #### Shading
-You must also shade the dependency into your plugin's .jar. (https://blog.jeff-media.com/common-maven-questions/#how-to-shade-dependencies)[Click here if you don't know how to do] that.
+You must also shade the dependency into your plugin's .jar. [Click here if you don't know how to do](https://blog.jeff-media.com/common-maven-questions/#how-to-shade-dependencies) that.
 
 ## Usage
 ```java
@@ -50,7 +50,7 @@ PersistentDataContainer pdc = PersistentDataSerializer.fromMap(pdcContext, map);
 PersistentDataContainer pdc = PersistentDataSerializer.fromJson(pdcContext, json);
 ```
 
-Note: To deserialize, you need to provide a `PersistentDataAdapterContext`. You can get one from any existing PersistentDataContainer by calling (https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/persistence/PersistentDataContainer.html#getAdapterContext())[PersistentDataContainer#getAdapterContext()]
+Note: To deserialize, you need to provide a `PersistentDataAdapterContext`. You can get one from any existing PersistentDataContainer by calling [PersistentDataContainer#getAdapterContext()](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/persistence/PersistentDataContainer.html#getAdapterContext())
 
 ## Information about MockBukkit
 If you're using MockBukkit, you'll notice that serializing to Json or YAML causes issues as the MockBukkit implementation of PersistentDataContainer is buggy. It will work fine on the actual server though.
