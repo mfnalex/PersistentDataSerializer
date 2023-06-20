@@ -36,3 +36,6 @@ PersistentDataContainer pdc = PersistentDataSerializer.fromJson(pdcContext, json
 ```
 
 Note: To deserialize, you need to provide a PersistentDataAdapterContext. You can get one from any existing PersistentDataContainer by calling (https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/persistence/PersistentDataContainer.html#getAdapterContext())[PersistentDataContainer#getAdapterContext()]
+
+## Information about MockBukkit
+If you're using MockBukkit, you'll notice that serializing to Json or YAML causes issues as the MockBukkit implementation of PersistentDataContainer is buggy. It will work fine on the actual server though.
