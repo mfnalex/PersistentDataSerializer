@@ -33,7 +33,7 @@ Allows to serialize and deserialize Bukkit's PersistentDataContainers to and fro
 </dependency>
 ```
 #### Shading
-You must also shade the dependency into your plugin's .jar. [Click here if you don't know how to do](https://blog.jeff-media.com/common-maven-questions/#how-to-shade-dependencies) that.
+You must also shade the dependency into your plugin's .jar. [Click here if you don't know how to do that](https://blog.jeff-media.com/common-maven-questions/#how-to-shade-dependencies).
 
 ## Usage
 ```java
