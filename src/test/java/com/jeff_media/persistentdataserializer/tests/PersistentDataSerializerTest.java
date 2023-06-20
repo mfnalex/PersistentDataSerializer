@@ -3,7 +3,6 @@ package com.jeff_media.persistentdataserializer.tests;
 import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
 import com.jeff_media.persistentdataserializer.PersistentDataSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -56,8 +55,8 @@ public class PersistentDataSerializerTest {
 
     @Test
     public void testMap() {
-        List<Map<?,?>> serialized = PersistentDataSerializer.toMap(pdc);
-        PersistentDataContainer deserialized = PersistentDataSerializer.fromMap(pdc.getAdapterContext(), serialized);
+        List<Map<?,?>> serialized = PersistentDataSerializer.toMapList(pdc);
+        PersistentDataContainer deserialized = PersistentDataSerializer.fromMapList(pdc.getAdapterContext(), serialized);
 
 
         PersistentDataContainer[] d_pdc23 = deserialized.get(key("pdc23"),
@@ -75,7 +74,7 @@ public class PersistentDataSerializerTest {
 
     @Test
     public void testYaml() throws InvalidConfigurationException {
-        List<Map<?,?>> serialized = PersistentDataSerializer.toMap(pdc);
+        List<Map<?,?>> serialized = PersistentDataSerializer.toMapList(pdc);
         YamlConfiguration yaml = new YamlConfiguration();
         yaml.set("pdc", serialized);
         String serializedYaml = yaml.saveToString();
@@ -83,8 +82,8 @@ public class PersistentDataSerializerTest {
         YamlConfiguration deserializedYaml = new YamlConfiguration();
         deserializedYaml.loadFromString(serializedYaml);
         List<Map<?,?>> deserialized = deserializedYaml.getMapList("pdc");
-        PersistentDataContainer pdc = PersistentDataSerializer.fromMap(this.pdc.getAdapterContext(), deserialized);
-        List<Map<?,?>> serialized2 = PersistentDataSerializer.toMap(pdc);
+        PersistentDataContainer pdc = PersistentDataSerializer.fromMapList(this.pdc.getAdapterContext(), deserialized);
+        List<Map<?,?>> serialized2 = PersistentDataSerializer.toMapList(pdc);
         YamlConfiguration yaml2 = new YamlConfiguration();
         yaml2.set("pdc", serialized2);
         String serializedYaml2 = yaml2.saveToString();

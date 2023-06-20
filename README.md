@@ -13,7 +13,7 @@
 </p>
 <!--- Buttons end -->
 
-Allows to serialize and deserialize Bukkit's PersistentDataContainers.
+Allows to serialize and deserialize Bukkit's PersistentDataContainers to and from `List<Map<?,?>>`s and Json, without requiring NMS.
 
 ## Maven
 #### Repository
@@ -50,7 +50,7 @@ PersistentDataContainer pdc = PersistentDataSerializer.fromMap(pdcContext, map);
 PersistentDataContainer pdc = PersistentDataSerializer.fromJson(pdcContext, json);
 ```
 
-Note: To deserialize, you need to provide a PersistentDataAdapterContext. You can get one from any existing PersistentDataContainer by calling (https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/persistence/PersistentDataContainer.html#getAdapterContext())[PersistentDataContainer#getAdapterContext()]
+Note: To deserialize, you need to provide a `PersistentDataAdapterContext`. You can get one from any existing PersistentDataContainer by calling (https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/persistence/PersistentDataContainer.html#getAdapterContext())[PersistentDataContainer#getAdapterContext()]
 
 ## Information about MockBukkit
 If you're using MockBukkit, you'll notice that serializing to Json or YAML causes issues as the MockBukkit implementation of PersistentDataContainer is buggy. It will work fine on the actual server though.

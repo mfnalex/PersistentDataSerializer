@@ -3,7 +3,6 @@ package com.jeff_media.persistentdataserializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Array;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -24,8 +23,6 @@ import java.util.Set;
  * Utility class to serialize and deserialize for {@link PersistentDataContainer}s
  */
 public final class PersistentDataSerializer {
-
-    private static final char PSEP = '\000';
 
     private static final Set<PersistentDataType<?, ?>> NATIVE_PERSISTENT_DATA_TYPES = new HashSet<>();
     private static final Map<String, PersistentDataType<?, ?>> NATIVE_PERSISTENT_DATA_TYPES_BY_NAME = new HashMap<>();
@@ -93,7 +90,7 @@ public final class PersistentDataSerializer {
      * @return serialized PersistentDataContainer
      */
     @NotNull
-    public static List<Map<?, ?>> toMap(
+    public static List<Map<?, ?>> toMapList(
             @NotNull
             PersistentDataContainer pdc) {
         List<Map<?, ?>> list = new ArrayList<>();
@@ -102,13 +99,13 @@ public final class PersistentDataSerializer {
             PersistentDataType<?, ?> type = getPersistentDataType(pdc, key);
             Object value = pdc.get(key, type);
             if (type.equals(PersistentDataType.TAG_CONTAINER)) {
-                value = toMap((PersistentDataContainer) value);
+                value = toMapList((PersistentDataContainer) value);
             }
             else if (type.equals(PersistentDataType.TAG_CONTAINER_ARRAY)) {
                 PersistentDataContainer[] containers = (PersistentDataContainer[]) value;
                 List<List<Map<?, ?>>> serializedContainers = new ArrayList<>();
                 for (PersistentDataContainer container : containers) {
-                    serializedContainers.add(toMap(container));
+                    serializedContainers.add(toMapList(container));
                 }
                 value = serializedContainers;
             }
@@ -127,8 +124,8 @@ public final class PersistentDataSerializer {
      * @return deserialized PersistentDataContainer
      */
     @NotNull
-    public static PersistentDataContainer fromMap(PersistentDataAdapterContext context,
-                                                  List<Map<?, ?>> serializedPdc) {
+    public static PersistentDataContainer fromMapList(PersistentDataAdapterContext context,
+                                                      List<Map<?, ?>> serializedPdc) {
         PersistentDataContainer pdc = context.newPersistentDataContainer();
         for (Map<?, ?> map : serializedPdc) {
             NamespacedKey key = NamespacedKey.fromString((String) map.get("key"));
@@ -140,13 +137,13 @@ public final class PersistentDataSerializer {
                     (PersistentDataType<Object, Object>) getNativePersistentDataTypeByFieldName((String) map.get("type"));
 
             if(type.equals(PersistentDataType.TAG_CONTAINER)) {
-                value = fromMap(context, (List<Map<?, ?>>) value);
+                value = fromMapList(context, (List<Map<?, ?>>) value);
             }
             else if(type.equals(PersistentDataType.TAG_CONTAINER_ARRAY)) {
                 List<List<Map<?, ?>>> serializedContainers = (List<List<Map<?, ?>>>) value;
                 PersistentDataContainer[] containers = new PersistentDataContainer[serializedContainers.size()];
                 for(int i=0; i<serializedContainers.size(); i++) {
-                    containers[i] = fromMap(context, serializedContainers.get(i));
+                    containers[i] = fromMapList(context, serializedContainers.get(i));
                 }
                 value = containers;
             }
@@ -211,11 +208,11 @@ public final class PersistentDataSerializer {
     }
 
     public static String toJson(PersistentDataContainer pdc) {
-        return gson.toJson(toMap(pdc), MAP_TYPE_TOKEN.getType());
+        return gson.toJson(toMapList(pdc), MAP_TYPE_TOKEN.getType());
     }
 
     public static PersistentDataContainer fromJson(PersistentDataAdapterContext context, String json) {
-        return fromMap(context, gson.fromJson(json, MAP_TYPE_TOKEN.getType()));
+        return fromMapList(context, gson.fromJson(json, MAP_TYPE_TOKEN.getType()));
     }
 
     /**
