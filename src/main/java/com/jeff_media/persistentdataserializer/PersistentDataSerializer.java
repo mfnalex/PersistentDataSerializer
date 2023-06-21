@@ -34,6 +34,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,17 +46,17 @@ public final class PersistentDataSerializer {
     /**
      * All native primitive {@link PersistentDataType}s declared in {@link PersistentDataType}
      */
-    private static final Set<PersistentDataType<?,?>> NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES = new HashSet<>();
+    private static final Set<PersistentDataType<?, ?>> NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES = new HashSet<>();
 
     /**
      * All native primitive {@link PersistentDataType}s mapped by their name
      */
-    private static final Map<String, PersistentDataType<?,?>> NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES_BY_NAME = new HashMap<>();
+    private static final Map<String, PersistentDataType<?, ?>> NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES_BY_NAME = new HashMap<>();
 
     /**
      * All native primitive {@link PersistentDataType} mapped by their class
      */
-    private static final Map<PersistentDataType<?,?>, String> NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES_BY_CLASS = new HashMap<>();
+    private static final Map<PersistentDataType<?, ?>, String> NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES_BY_CLASS = new HashMap<>();
 
     /**
      * TypeToken for {@link List} of {@link Map}s with {@link String} keys and {@link Object} values
@@ -71,7 +72,7 @@ public final class PersistentDataSerializer {
         for (final Field field : PersistentDataType.class.getFields()) {
 
             // Ignore non-PersistentDataType fields
-            if (field.getType() != PersistentDataType.class) {
+            if (!PersistentDataType.class.isAssignableFrom(field.getType())) {
                 continue;
             }
 
@@ -103,14 +104,16 @@ public final class PersistentDataSerializer {
     }
 
     /**
-     * Gets the proper {@link org.bukkit.persistence.PersistentDataType.PrimitivePersistentDataType} for the given {@link NamespacedKey}
+     * Gets the proper {@link org.bukkit.persistence.PersistentDataType} for the given {@link NamespacedKey}
      *
      * @param pdc PersistentDataContainer
      * @param key NamespacedKey
+     *
      * @return PrimitivePersistentDataType
+     *
      * @throws IllegalArgumentException if no native PrimitivePersistentDataType was found. (This should never happen.)
      */
-    public static PersistentDataType<?,?> getPrimitivePersistentDataType(
+    public static PersistentDataType<?, ?> getPrimitivePersistentDataType(
             @NotNull final PersistentDataContainer pdc,
             @NotNull final NamespacedKey key
     ) throws IllegalArgumentException {
@@ -118,22 +121,24 @@ public final class PersistentDataSerializer {
         Objects.requireNonNull(pdc, "pdc cannot be null");
         Objects.requireNonNull(key, "key cannot be null");
 
-        for (final PersistentDataType<?,?> type : NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES) {
+        for (final PersistentDataType<?, ?> type : NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES) {
             if (pdc.has(key, type)) {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Could not find a native PrimitivePersistentDataType for key " + key.toString() +
-                " in PersistentDataContainer " + pdc.toString() + ". Available native datatypes are " + String.join(", ", NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES_BY_NAME.keySet()));
+        throw new IllegalArgumentException("Could not find a native PrimitivePersistentDataType for key " + key +
+                " in PersistentDataContainer " + pdc + ". Available native datatypes are " + String.join(", ", NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES_BY_NAME.keySet()));
     }
 
     /**
      * Serializes a {@link PersistentDataContainer} to a list of maps
      *
      * @param pdc PersistentDataContainer
+     *
      * @return serialized PersistentDataContainer
      */
     @NotNull
+    @Contract(value = "_ -> new", pure = true)
     public static List<Map<?, ?>> toMapList(
             @NotNull final PersistentDataContainer pdc
     ) {
@@ -171,23 +176,27 @@ public final class PersistentDataSerializer {
     }
 
     /**
-     * Deserializes a {@link PersistentDataContainer} from a list of maps
+     * Deserializes a {@link PersistentDataContainer} from a list of maps and saves it to the given target {@link PersistentDataContainer}
      *
-     * @param context       PersistentDataAdapterContext
      * @param serializedPdc serialized PersistentDataContainer
+     * @param targetPdc     target PersistentDataContainer
+     *
      * @return deserialized PersistentDataContainer
      */
     @NotNull
+    @Contract(value = "_, _ -> param2")
     @SuppressWarnings("unchecked")
     public static PersistentDataContainer fromMapList(
-            @NotNull final PersistentDataAdapterContext context,
-            @NotNull final List<Map<?, ?>> serializedPdc
+            @NotNull final List<Map<?, ?>> serializedPdc,
+            @NotNull final PersistentDataContainer targetPdc
     ) {
 
-        Objects.requireNonNull(context, "context cannot be null");
+        Objects.requireNonNull(targetPdc, "targetPdc cannot be null");
         Objects.requireNonNull(serializedPdc, "serializedPdc cannot be null");
 
-        final PersistentDataContainer pdc = context.newPersistentDataContainer();
+        final PersistentDataAdapterContext context = targetPdc.getAdapterContext();
+
+        //final PersistentDataContainer pdc = context.newPersistentDataContainer();
         for (final Map<?, ?> map : serializedPdc) {
             final NamespacedKey key = NamespacedKey.fromString((String) map.get("key"));
 
@@ -198,36 +207,64 @@ public final class PersistentDataSerializer {
                     (PersistentDataType<Object, Object>) getNativePersistentDataTypeByFieldName((String) map.get("type"));
 
             if (type.equals(PersistentDataType.TAG_CONTAINER)) {
-                value = fromMapList(context, (List<Map<?, ?>>) value);
+                value = fromMapList((List<Map<?, ?>>) value, context.newPersistentDataContainer());
             } else if (type.equals(PersistentDataType.TAG_CONTAINER_ARRAY)) {
                 List<List<Map<?, ?>>> serializedContainers = (List<List<Map<?, ?>>>) value;
                 final PersistentDataContainer[] containers = new PersistentDataContainer[serializedContainers.size()];
                 for (int i = 0; i < serializedContainers.size(); i++) {
-                    containers[i] = fromMapList(context, serializedContainers.get(i));
+                    containers[i] = fromMapList(serializedContainers.get(i), context.newPersistentDataContainer());
                 }
                 value = containers;
             } else {
                 value = cast(value, type);
             }
 
-            pdc.set(key, type, value);
+            targetPdc.set(key, type, value);
         }
-        
-        return pdc;
+
+        return targetPdc;
     }
 
+    /**
+     * Deserializes a {@link PersistentDataContainer} from a list of maps and saves it to the given target {@link PersistentDataContainer}
+     *
+     * @param serializedPdc serialized PersistentDataContainer
+     * @param context       PersistentDataAdapterContext
+     *
+     * @return deserialized PersistentDataContainer
+     */
+    @NotNull
+    @Contract(value = "_, _ -> new", pure = true)
+    public static PersistentDataContainer fromMapList(
+            @NotNull final List<Map<?, ?>> serializedPdc,
+            @NotNull final PersistentDataAdapterContext context
+    ) {
+        Objects.requireNonNull(serializedPdc, "serializedPdc cannot be null");
+        Objects.requireNonNull(context, "context cannot be null");
+
+        return fromMapList(serializedPdc, context.newPersistentDataContainer());
+    }
+
+    /**
+     * Casts a value to the given {@link PersistentDataType}'s primitive type
+     *
+     * @param value value to cast
+     * @param type  PersistentDataType
+     *
+     * @return casted value
+     */
     private static Object cast(
             @Nullable final Object value,
             @NotNull final PersistentDataType<?, ?> type
     ) {
-        
+
         if (value == null) {
             return null;
         }
-        
+
         Objects.requireNonNull(type, "type cannot be null");
         final Class<?> primitiveType = type.getPrimitiveType();
-        
+
         if (primitiveType == Float.class) {
             return ((Number) value).floatValue();
         } else if (primitiveType == Integer.class) {
@@ -241,7 +278,7 @@ public final class PersistentDataSerializer {
                 if (value instanceof Byte) {
                     return ((Byte) value) == 1;
                 } else if (value instanceof Boolean) {
-                    return (Boolean) value;
+                    return value;
                 }
             } else if (value instanceof Boolean) {
                 return (byte) (((Boolean) value) ? 1 : 0);
@@ -280,8 +317,11 @@ public final class PersistentDataSerializer {
      * Serializes a {@link PersistentDataContainer} to JSON
      *
      * @param pdc PersistentDataContainer
+     *
      * @return JSON string
      */
+    @Contract(value = "_ -> new", pure = true)
+    @NotNull
     public static String toJson(
             @NotNull final PersistentDataContainer pdc
     ) {
@@ -290,32 +330,63 @@ public final class PersistentDataSerializer {
     }
 
     /**
-     * Deserializes a {@link PersistentDataContainer} from JSON
-     * @param context PersistentDataAdapterContext
-     * @param json JSON string
+     * Deserializes a {@link PersistentDataContainer} from JSON and saves it to the given target {@link PersistentDataContainer}
+     *
+     * @param serializedPdc serialized PersistentDataContainer
+     * @param targetPdc     target PersistentDataContainer
+     *
      * @return deserialized PersistentDataContainer
+     *
      * @throws JsonSyntaxException if the JSON is malformed
      */
+    @Contract(value = "_, _ -> param2")
+    @NotNull
     public static PersistentDataContainer fromJson(
-            @NotNull final PersistentDataAdapterContext context,
-            @NotNull final String json
+            @NotNull final String serializedPdc,
+            @NotNull final PersistentDataContainer targetPdc
     ) throws JsonSyntaxException {
+
+        Objects.requireNonNull(targetPdc, "targetPdc cannot be null");
+        Objects.requireNonNull(serializedPdc, "serializedPdc cannot be null");
+        return fromMapList(GSON.fromJson(serializedPdc, LIST_MAP_TYPE_TOKEN.getType()), targetPdc);
+    }
+
+    /**
+     * Deserializes a {@link PersistentDataContainer} from JSON and saves it to a new {@link PersistentDataContainer} created in the given context
+     *
+     * @param serializedPdc serialized PersistentDataContainer
+     * @param context       PersistentDataAdapterContext
+     *
+     * @return deserialized PersistentDataContainer
+     *
+     * @throws JsonSyntaxException if the JSON is malformed
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    @NotNull
+    public static PersistentDataContainer fromJson(
+            @NotNull final String serializedPdc,
+            @NotNull final PersistentDataAdapterContext context
+    ) throws JsonSyntaxException {
+
+        Objects.requireNonNull(serializedPdc, "serializedPdc cannot be null");
         Objects.requireNonNull(context, "context cannot be null");
-        Objects.requireNonNull(json, "json cannot be null");
-        return fromMapList(context, GSON.fromJson(json, LIST_MAP_TYPE_TOKEN.getType()));
+        return fromMapList(GSON.fromJson(serializedPdc, LIST_MAP_TYPE_TOKEN.getType()), context.newPersistentDataContainer());
     }
 
     /**
      * Gets a native {@link PersistentDataType} by its field name, e.g. "STRING" or "BYTE_ARRAY" (case-sensitive)
      *
      * @param fieldName field name
+     *
      * @return native PersistentDataType
+     *
      * @throws IllegalArgumentException if no native PersistentDataType was found with the given field name
      */
     @NotNull
-    public static PersistentDataType<?, ?> getNativePersistentDataTypeByFieldName(
+    private static PersistentDataType<?, ?> getNativePersistentDataTypeByFieldName(
             @NotNull final String fieldName
     ) throws IllegalArgumentException {
+
         Objects.requireNonNull(fieldName, "fieldName cannot be null");
         final PersistentDataType<?, ?> type = NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES_BY_NAME.get(fieldName);
         if (type == null) {
@@ -328,15 +399,19 @@ public final class PersistentDataSerializer {
      * Gets the field name for the given native {@link PersistentDataType}
      *
      * @param type native PersistentDataType
+     *
      * @return field name
+     *
      * @throws IllegalArgumentException if the given PersistentDataType is not native and therefore does not have a field name
      */
     @NotNull
-    public static String getNativePersistentDataTypeFieldName(
+    private static String getNativePersistentDataTypeFieldName(
             @NotNull final PersistentDataType<?, ?> type
     ) throws IllegalArgumentException {
+
         Objects.requireNonNull(type, "type cannot be null");
         final String name = NATIVE_PRIMITIVE_PERSISTENT_DATA_TYPES_BY_CLASS.get(type);
+
         if (name == null) {
             throw new IllegalArgumentException(
                     "Could not find native field name for PersistentDataType with " + "primitive class " +
