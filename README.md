@@ -22,7 +22,6 @@ requiring NMS.
 The dependency is available on Maven Central:
 
 ```xml
-
 <dependency>
     <groupId>com.jeff_media</groupId>
     <artifactId>PersistentDataSerializer</artifactId>
