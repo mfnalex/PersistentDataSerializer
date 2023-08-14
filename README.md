@@ -2,7 +2,7 @@
 
 <!--- Buttons start -->
 <p align="center">
-  <a href="https://hub.jeff-media.com/javadocs/com/jeff_media/persistent-data-serializer/1.0">
+  <a href="https://hub.jeff-media.com/javadocs/com/jeff-media/persistent-data-serializer/1.0">
     <img src="https://static.jeff-media.com/img/button_javadocs.png?3" alt="Javadocs">
   </a>
   <a href="https://discord.jeff-media.com/">
