@@ -21,15 +21,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -37,6 +28,9 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * Utility class to serialize and deserialize for {@link PersistentDataContainer}s
@@ -108,9 +102,7 @@ public final class PersistentDataSerializer {
      *
      * @param pdc PersistentDataContainer
      * @param key NamespacedKey
-     *
      * @return PrimitivePersistentDataType
-     *
      * @throws IllegalArgumentException if no native PrimitivePersistentDataType was found. (This should never happen.)
      */
     public static PersistentDataType<?, ?> getPrimitivePersistentDataType(
@@ -134,7 +126,6 @@ public final class PersistentDataSerializer {
      * Serializes a {@link PersistentDataContainer} to a list of maps
      *
      * @param pdc PersistentDataContainer
-     *
      * @return serialized PersistentDataContainer
      */
     @NotNull
@@ -180,7 +171,6 @@ public final class PersistentDataSerializer {
      *
      * @param serializedPdc serialized PersistentDataContainer
      * @param targetPdc     target PersistentDataContainer
-     *
      * @return deserialized PersistentDataContainer
      */
     @NotNull
@@ -230,7 +220,6 @@ public final class PersistentDataSerializer {
      *
      * @param serializedPdc serialized PersistentDataContainer
      * @param context       PersistentDataAdapterContext
-     *
      * @return deserialized PersistentDataContainer
      */
     @NotNull
@@ -250,7 +239,6 @@ public final class PersistentDataSerializer {
      *
      * @param value value to cast
      * @param type  PersistentDataType
-     *
      * @return casted value
      */
     private static Object cast(
@@ -317,7 +305,6 @@ public final class PersistentDataSerializer {
      * Serializes a {@link PersistentDataContainer} to JSON
      *
      * @param pdc PersistentDataContainer
-     *
      * @return JSON string
      */
     @Contract(value = "_ -> new", pure = true)
@@ -334,9 +321,7 @@ public final class PersistentDataSerializer {
      *
      * @param serializedPdc serialized PersistentDataContainer
      * @param targetPdc     target PersistentDataContainer
-     *
      * @return deserialized PersistentDataContainer
-     *
      * @throws JsonSyntaxException if the JSON is malformed
      */
     @Contract(value = "_, _ -> param2")
@@ -356,9 +341,7 @@ public final class PersistentDataSerializer {
      *
      * @param serializedPdc serialized PersistentDataContainer
      * @param context       PersistentDataAdapterContext
-     *
      * @return deserialized PersistentDataContainer
-     *
      * @throws JsonSyntaxException if the JSON is malformed
      */
     @Contract(value = "_, _ -> new", pure = true)
@@ -377,9 +360,7 @@ public final class PersistentDataSerializer {
      * Gets a native {@link PersistentDataType} by its field name, e.g. "STRING" or "BYTE_ARRAY" (case-sensitive)
      *
      * @param fieldName field name
-     *
      * @return native PersistentDataType
-     *
      * @throws IllegalArgumentException if no native PersistentDataType was found with the given field name
      */
     @NotNull
@@ -399,9 +380,7 @@ public final class PersistentDataSerializer {
      * Gets the field name for the given native {@link PersistentDataType}
      *
      * @param type native PersistentDataType
-     *
      * @return field name
-     *
      * @throws IllegalArgumentException if the given PersistentDataType is not native and therefore does not have a field name
      */
     @NotNull

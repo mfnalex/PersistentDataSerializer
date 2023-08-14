@@ -2,7 +2,7 @@
 
 <!--- Buttons start -->
 <p align="center">
-  <a href="https://repo.jeff-media.com/javadoc/public/com/jeff_media/PersistentDataSerializer/1.0-SNAPSHOT">
+  <a href="https://hub.jeff-media.com/javadocs/com/jeff_media/persistent-data-serializer/1.0">
     <img src="https://static.jeff-media.com/img/button_javadocs.png?3" alt="Javadocs">
   </a>
   <a href="https://discord.jeff-media.com/">
@@ -17,27 +17,16 @@
 Allows to serialize and deserialize Bukkit's PersistentDataContainers to and from `List<Map<?,?>>`s and Json, without
 requiring NMS.
 
-## Maven
+## Maven Dependency
 
-#### Repository
-
-```xml
-
-<repository>
-    <id>jeff-media-public</id>
-    <url>https://repo.jeff-media.com/public</url>
-</repository>
-```
-
-#### Dependency
+The dependency is available on Maven Central:
 
 ```xml
 
 <dependency>
     <groupId>com.jeff_media</groupId>
     <artifactId>PersistentDataSerializer</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <scope>compile</scope>
+    <version>1.0</version>
 </dependency>
 ```
 
