@@ -23,7 +23,7 @@ The dependency is available on Maven Central:
 
 ```xml
 <dependency>
-    <groupId>com.jeff_media</groupId>
+    <groupId>com.jeff-media</groupId>
     <artifactId>persistent-data-serializer</artifactId>
     <version>1.0</version>
 </dependency>
